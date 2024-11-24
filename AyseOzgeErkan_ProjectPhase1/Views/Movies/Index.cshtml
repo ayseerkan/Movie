@@ -1,0 +1,34 @@
+@model IEnumerable<BLL.DAL.Movie>  
+
+<h2>Movies</h2>
+
+<p>
+    <a href="@Url.Action("Create")" class="btn btn-primary">Create New</a>
+</p>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Release Date</th>
+        <th>Total Revenue</th>
+        <th>Director</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var movie in Model)
+    {
+    <tr>
+        <td>@movie.Name</td>
+        <td>@movie.ReleaseDate?.ToString("dd/mm/yyyy")</td>
+        <td>@movie.TotalRevenue</td>
+        <td>@movie.Director?.Name</td>
+        <td>
+            <a href="@Url.Action("Edit", new { id = movie.Id })" class="btn btn-primary">Edit</a>
+            <a href="@Url.Action("Delete", new { id = movie.Id })" class="btn btn-danger">Delete</a>
+        </td>
+    </tr>
+    }
+    </tbody>
+</table>

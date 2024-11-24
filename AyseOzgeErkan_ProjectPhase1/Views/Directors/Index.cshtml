@@ -1,0 +1,32 @@
+@model IEnumerable<BLL.DAL.Director>  
+
+<h2>Directors</h2>
+
+<p>
+    <a href="@Url.Action("Create")" class="btn btn-primary">Create New</a>
+</p>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Surname</th>
+        <th>Retired</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var director in Model)
+    {
+    <tr>
+        <td>@director.Name</td>
+        <td>@director.Surname</td>
+        <td>@(director.IsRetired ? "Yes" : "No")</td>
+        <td>
+            <a href="@Url.Action("Edit", new { id = director.Id })" class="btn btn-primary">Edit</a>
+            <a href="@Url.Action("Delete", new { id = director.Id })" class="btn btn-danger">Delete</a>
+        </td>
+    </tr>
+    }
+    </tbody>
+</table>
