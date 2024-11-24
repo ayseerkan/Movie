@@ -1,45 +1,23 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
+using AyseOzgeErkan_ProjectPhase1.Services;
 using BLL.DAL;
+using Microsoft.AspNetCore.Mvc;
 
 namespace AyseOzgeErkan_ProjectPhase1.Controllers
 {
     public class GenresController : Controller
     {
-        private readonly AppDbContext _context;
+        private readonly GenreService _genreService;
 
-        public GenresController(AppDbContext context)
+        public GenresController(GenreService genreService)
         {
-            _context = context;
+            _genreService = genreService;
         }
 
         // GET: Genres
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Genres.ToListAsync());
-        }
-
-        // GET: Genres/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var genre = await _context.Genres
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (genre == null)
-            {
-                return NotFound();
-            }
-
-            return View(genre);
+            var genres = await _genreService.GetAllGenresAsync();
+            return View(genres);
         }
 
         // GET: Genres/Create
@@ -49,68 +27,62 @@ namespace AyseOzgeErkan_ProjectPhase1.Controllers
         }
 
         // POST: Genres/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Name")] Genre genre)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(genre);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    await _genreService.AddGenreAsync(genre);  // Ensure _genreService is being called correctly
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error while saving genre: {ex.Message}");
+                    ModelState.AddModelError("", "An error occurred while saving the genre.");
+                }
             }
+            else
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                foreach (var error in errors)
+                {
+                    Console.WriteLine($"Validation error: {error}");
+                }
+            }
+
             return View(genre);
         }
+
 
         // GET: Genres/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var genre = await _context.Genres.FindAsync(id);
-            if (genre == null)
-            {
-                return NotFound();
-            }
+            var genre = await _genreService.GetGenreByIdAsync(id.Value);
+            if (genre == null) return NotFound();
+
             return View(genre);
         }
 
         // POST: Genres/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] Genre genre)
         {
-            if (id != genre.Id)
-            {
-                return NotFound();
-            }
+            if (id != genre.Id) return NotFound();
 
             if (ModelState.IsValid)
             {
-                try
+                var success = await _genreService.UpdateGenreAsync(genre);
+                if (success)
                 {
-                    _context.Update(genre);
-                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
                 }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!GenreExists(genre.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                ModelState.AddModelError("", "Failed to update genre.");
             }
             return View(genre);
         }
@@ -118,17 +90,10 @@ namespace AyseOzgeErkan_ProjectPhase1.Controllers
         // GET: Genres/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var genre = await _context.Genres
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (genre == null)
-            {
-                return NotFound();
-            }
+            var genre = await _genreService.GetGenreByIdAsync(id.Value);
+            if (genre == null) return NotFound();
 
             return View(genre);
         }
@@ -138,19 +103,13 @@ namespace AyseOzgeErkan_ProjectPhase1.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var genre = await _context.Genres.FindAsync(id);
-            if (genre != null)
+            var success = await _genreService.DeleteGenreAsync(id);
+            if (success)
             {
-                _context.Genres.Remove(genre);
+                return RedirectToAction(nameof(Index));
             }
-
-            await _context.SaveChangesAsync();
+            ModelState.AddModelError("", "Failed to delete genre.");
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool GenreExists(int id)
-        {
-            return _context.Genres.Any(e => e.Id == id);
         }
     }
 }

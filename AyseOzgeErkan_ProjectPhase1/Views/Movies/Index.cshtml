@@ -1,33 +1,42 @@
-@model IEnumerable<BLL.DAL.Movie>  
+@model IEnumerable<BLL.DAL.Movie>
 
-<h2>Movies</h2>
+<h1 class="text-center mb-4">Movies</h1>
 
-<p>
+<div class="mb-3">
     <a href="@Url.Action("Create")" class="btn btn-primary">Create New</a>
-</p>
+</div>
 
-<table class="table">
+<table class="table table-striped table-hover">
     <thead>
     <tr>
         <th>Name</th>
         <th>Release Date</th>
         <th>Total Revenue</th>
         <th>Director</th>
-        <th>Actions</th>
+        <th class="text-center">Actions</th>
     </tr>
     </thead>
     <tbody>
-    @foreach (var movie in Model)
+    @if (Model != null && Model.Any())
+    {
+    foreach (var movie in Model)
     {
     <tr>
         <td>@movie.Name</td>
-        <td>@movie.ReleaseDate?.ToString("dd/mm/yyyy")</td>
-        <td>@movie.TotalRevenue</td>
+        <td>@movie.ReleaseDate?.ToString("dd/MM/yyyy")</td>
+        <td>@movie.TotalRevenue.ToString("C")</td>
         <td>@movie.Director?.Name</td>
-        <td>
-            <a href="@Url.Action("Edit", new { id = movie.Id })" class="btn btn-primary">Edit</a>
-            <a href="@Url.Action("Delete", new { id = movie.Id })" class="btn btn-danger">Delete</a>
+        <td class="text-center">
+            <a href="@Url.Action("Edit", new { id = movie.Id })" class="btn btn-primary btn-sm mx-1">Edit</a>
+            <a href="@Url.Action("Delete", new { id = movie.Id })" class="btn btn-danger btn-sm mx-1">Delete</a>
         </td>
+    </tr>
+    }
+    }
+    else
+    {
+    <tr>
+        <td colspan="5" class="text-center">No movies available.</td>
     </tr>
     }
     </tbody>

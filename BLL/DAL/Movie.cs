@@ -7,18 +7,19 @@ namespace BLL.DAL
     {
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "Movie name is required.")]
-        [MaxLength(100, ErrorMessage = "Movie name cannot exceed 100 characters.")]
+        [Required(ErrorMessage = "The Name field is required.")]
+        [StringLength(100, ErrorMessage = "The Name field cannot exceed 100 characters.")]
+        [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "The Name field can only contain letters and spaces.")]
         public string Name { get; set; }
 
-        [Required(ErrorMessage = "Release Date is required.")]
-        [DataType(DataType.Date, ErrorMessage = "Invalid date format.")]
+        [Required(ErrorMessage = "The Release Date field is required.")]
+        [DataType(DataType.Date)]
         public DateTime? ReleaseDate { get; set; }
 
-        [Range(0, double.MaxValue, ErrorMessage = "Total Revenue must be a positive value.")]
+        [Range(0, double.MaxValue, ErrorMessage = "The Total Revenue must be a positive value.")]
         public decimal TotalRevenue { get; set; }
 
-        [Required(ErrorMessage = "The Director ID field is required.")]
+        [Required(ErrorMessage = "A Director must be selected.")]
         public int DirectorId { get; set; }
 
         [ValidateNever] // Ignore validation for the navigation property

@@ -1,31 +1,40 @@
-@model IEnumerable<BLL.DAL.Director>  
+@model IEnumerable<BLL.DAL.Director>
 
-<h2>Directors</h2>
+<h1 class="text-center mb-4">Directors</h1>
 
-<p>
+<div class="mb-3">
     <a href="@Url.Action("Create")" class="btn btn-primary">Create New</a>
-</p>
+</div>
 
-<table class="table">
+<table class="table table-striped table-hover">
     <thead>
     <tr>
         <th>Name</th>
         <th>Surname</th>
         <th>Retired</th>
-        <th>Actions</th>
+        <th class="text-center">Actions</th>
     </tr>
     </thead>
     <tbody>
-    @foreach (var director in Model)
+    @if (Model != null && Model.Any())
+    {
+    foreach (var director in Model)
     {
     <tr>
         <td>@director.Name</td>
         <td>@director.Surname</td>
         <td>@(director.IsRetired ? "Yes" : "No")</td>
-        <td>
-            <a href="@Url.Action("Edit", new { id = director.Id })" class="btn btn-primary">Edit</a>
-            <a href="@Url.Action("Delete", new { id = director.Id })" class="btn btn-danger">Delete</a>
+        <td class="text-center">
+            <a href="@Url.Action("Edit", new { id = director.Id })" class="btn btn-primary btn-sm mx-1">Edit</a>
+            <a href="@Url.Action("Delete", new { id = director.Id })" class="btn btn-danger btn-sm mx-1">Delete</a>
         </td>
+    </tr>
+    }
+    }
+    else
+    {
+    <tr>
+        <td colspan="4" class="text-center">No directors available.</td>
     </tr>
     }
     </tbody>

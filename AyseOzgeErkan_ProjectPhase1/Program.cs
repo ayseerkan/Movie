@@ -1,6 +1,7 @@
+using AyseOzgeErkan_ProjectPhase1.Services;
 using Microsoft.EntityFrameworkCore;
 using BLL.DAL;
-using BLL.Services;  // Adjust this namespace based on your project structure
+using BLL.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +11,7 @@ builder.Services.AddControllersWithViews();
 // Register application services
 builder.Services.AddScoped<MovieService>();
 builder.Services.AddScoped<DirectorService>();
+builder.Services.AddScoped<GenreService>(); // Register GenreService
 
 // Register AppDbContext with PostgreSQL
 builder.Services.AddDbContext<AppDbContext>(options =>

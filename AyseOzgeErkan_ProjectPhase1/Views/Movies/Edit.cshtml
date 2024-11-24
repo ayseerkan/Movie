@@ -1,45 +1,44 @@
 @model BLL.DAL.Movie
 
 @{
-ViewData["Title"] = "Edit Movie";
+ViewData["Title"] = "Create Movie";
 }
 
-<h2>Edit Movie</h2>
+<h2 class="text-center">Create Movie</h2>
 
-<form asp-action="Edit" method="post">
-    <div class="form-group">
-        <label asp-for="Name" class="control-label">Movie Name</label>
-        <input asp-for="Name" class="form-control" required />
-        <span asp-validation-for="Name" class="text-danger"></span>
+<div class="card form-card">
+    <div class="card-body">
+        <form asp-action="Create" asp-controller="Movies" method="post">
+            <div class="form-group mb-3">
+                <label asp-for="Name" class="control-label">Movie Name</label>
+                <input asp-for="Name" class="form-control" required />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="ReleaseDate" class="control-label">Release Date</label>
+                <input asp-for="ReleaseDate" class="form-control" type="date" required />
+                <span asp-validation-for="ReleaseDate" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="TotalRevenue" class="control-label">Total Revenue</label>
+                <input asp-for="TotalRevenue" class="form-control" type="number" required />
+                <span asp-validation-for="TotalRevenue" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="DirectorId" class="control-label">Director</label>
+                <select asp-for="DirectorId" class="form-control" asp-items="ViewBag.Directors" required>
+                    <option value="">Select a Director</option>
+                </select>
+                <span asp-validation-for="DirectorId" class="text-danger"></span>
+            </div>
+
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary">Create</button>
+                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+            </div>
+        </form>
     </div>
-
-    <div class="form-group">
-        <label asp-for="ReleaseDate" class="control-label">Release Date</label>
-        <input asp-for="ReleaseDate" class="form-control" type="date" required />
-        <span asp-validation-for="ReleaseDate" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="TotalRevenue" class="control-label">Total Revenue</label>
-        <input asp-for="TotalRevenue" class="form-control" type="number" required />
-        <span asp-validation-for="TotalRevenue" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label for="DirectorId">Director</label>
-        <select asp-for="DirectorId" class="form-control" asp-items="ViewBag.Directors" required>
-            <option value="">Select a Director</option>
-        </select>
-        <span asp-validation-for="DirectorId" class="text-danger"></span>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Save Changes</button>
-</form>
-
-<div>
-    <a asp-action="Index">Back to List</a>
 </div>
-
-@section Scripts {
-@{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}
