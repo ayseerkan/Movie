@@ -1,14 +1,14 @@
 @model BLL.DAL.Genre
 
 @{
-ViewData["Title"] = "Create Genre";
+ViewData["Title"] = "Edit Genre";
 }
 
-<h2 class="text-center">Create Genre</h2>
+<h2 class="text-center">Edit Genre</h2>
 
 <div class="card form-card">
     <div class="card-body">
-        <form asp-action="Create" method="post">
+        <form asp-action="Edit" asp-controller="Genres" method="post">
             <div class="form-group mb-3">
                 <label asp-for="Name" class="control-label"></label>
                 <input asp-for="Name" class="form-control" />
@@ -17,7 +17,7 @@ ViewData["Title"] = "Create Genre";
 
             <hr />
             <div class="d-flex justify-content-center gap-2">
-                <button type="submit" class="btn btn-primary">Create</button>
+                <button type="submit" class="btn btn-primary">Save</button>
                 <a asp-action="Index" class="btn btn-secondary">Back to List</a>
             </div>
         </form>
