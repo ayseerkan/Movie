@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="../build/AyseOzgeErkan_ProjectPhase1.props" />
+</Project>
