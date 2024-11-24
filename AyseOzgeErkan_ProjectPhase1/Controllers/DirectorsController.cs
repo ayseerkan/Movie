@@ -1,44 +1,37 @@
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using BLL.DAL;
-using Microsoft.Extensions.Logging;  // Ensure you are using the correct namespace for ILogger
+using BLL.Services;
 
 namespace AyseOzgeErkan_ProjectPhase1.Controllers
 {
     public class DirectorsController : Controller
     {
-        private readonly AppDbContext _context;
-        private readonly ILogger<DirectorsController> _logger;  // Inject logger into controller
+        private readonly DirectorService _directorService;
+        private readonly ILogger<DirectorsController> _logger;
 
-        // Inject the AppDbContext and ILogger services through the constructor
-        public DirectorsController(AppDbContext context, ILogger<DirectorsController> logger)
+        public DirectorsController(DirectorService directorService, ILogger<DirectorsController> logger)
         {
-            _context = context;
+            _directorService = directorService;
             _logger = logger;
         }
 
         // GET: Directors
         public async Task<IActionResult> Index()
         {
-            var directors = await _context.Directors.ToListAsync();  // Get the list of directors from the database
-            return View(directors);  // Pass the list of directors to the view
+            var directors = await _directorService.GetAllDirectorsAsync();
+            return View(directors);
         }
 
         // GET: Directors/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var director = await _context.Directors
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var director = await _directorService.GetDirectorByIdAsync(id);
             if (director == null)
             {
+                _logger.LogWarning($"Director with ID {id} not found.");
                 return NotFound();
             }
 
@@ -48,39 +41,55 @@ namespace AyseOzgeErkan_ProjectPhase1.Controllers
         // GET: Directors/Create
         public IActionResult Create()
         {
-            // Pass the redirectTo parameter from the query string if it exists
-            ViewData["RedirectTo"] = Request.Query["redirectTo"];
             return View();
         }
 
         // POST: Directors/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name, Surname, IsRetired")] Director director)
+        public async Task<IActionResult> Create([Bind("Name,Surname,IsRetired")] Director director)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(director);  // Add new director to the database
-                await _context.SaveChangesAsync();  // Save changes
+                try
+                {
+                    // Check if a director with the same name and surname already exists
+                    var existingDirector = await _directorService.GetDirectorByNameAndSurnameAsync(director.Name, director.Surname);
+                    if (existingDirector != null)
+                    {
+                        ModelState.AddModelError("", "A director with the same name and surname already exists.");
+                        return View(director);
+                    }
 
-                return RedirectToAction(nameof(Index));  // Redirect to the Index page to show updated list
+                    var result = await _directorService.AddDirectorAsync(director);
+                    if (result)
+                    {
+                        _logger.LogInformation($"Director {director.Name} {director.Surname} added successfully.");
+                        return RedirectToAction(nameof(Index));
+                    }
+
+                    ModelState.AddModelError("", "Failed to add the director.");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error occurred while adding a new director.");
+                    ModelState.AddModelError("", "An unexpected error occurred. Please try again.");
+                }
             }
-            return View(director);  // If validation fails, return the user to the Create page
+
+            return View(director);
         }
 
         // GET: Directors/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit(int id)
         {
-            if (id == null)
+            var director = await _directorService.GetDirectorByIdAsync(id);
+            if (director == null)
             {
+                _logger.LogWarning($"Director with ID {id} not found for editing.");
                 return NotFound();
             }
 
-            var director = await _context.Directors.FindAsync(id);
-            if (director == null)
-            {
-                return NotFound();
-            }
             return View(director);
         }
 
@@ -98,39 +107,45 @@ namespace AyseOzgeErkan_ProjectPhase1.Controllers
             {
                 try
                 {
-                    _context.Update(director);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!DirectorExists(director.Id))
+                    var existingDirector = await _directorService.GetDirectorByIdAsync(id);
+                    if (existingDirector == null)
                     {
                         return NotFound();
                     }
-                    else
+
+                    // Update properties
+                    existingDirector.Name = director.Name;
+                    existingDirector.Surname = director.Surname;
+                    existingDirector.IsRetired = director.IsRetired;
+
+                    // Update in database
+                    var result = await _directorService.UpdateDirectorAsync(existingDirector);
+                    if (result)
                     {
-                        // Log the exception and rethrow
-                        _logger.LogError($"Error updating director with ID {director.Id}");
-                        throw;
+                        _logger.LogInformation($"Director {director.Name} {director.Surname} updated successfully.");
+                        return RedirectToAction(nameof(Index));
                     }
+
+                    ModelState.AddModelError("", "Failed to update the director.");
                 }
-                return RedirectToAction(nameof(Index));
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Error updating director with ID {id}.");
+                    ModelState.AddModelError("", "An unexpected error occurred. Please try again.");
+                }
             }
+
             return View(director);
         }
 
-        // GET: Directors/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
 
-            var director = await _context.Directors
-                .FirstOrDefaultAsync(m => m.Id == id);
+        // GET: Directors/Delete/5
+        public async Task<IActionResult> Delete(int id)
+        {
+            var director = await _directorService.GetDirectorByIdAsync(id);
             if (director == null)
             {
+                _logger.LogWarning($"Director with ID {id} not found for deletion.");
                 return NotFound();
             }
 
@@ -142,18 +157,25 @@ namespace AyseOzgeErkan_ProjectPhase1.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var director = await _context.Directors.FindAsync(id);
-            if (director != null)
+            try
             {
-                _context.Directors.Remove(director);
-                await _context.SaveChangesAsync();
-            }
-            return RedirectToAction(nameof(Index));
-        }
+                var result = await _directorService.DeleteDirectorAsync(id);
+                if (result)
+                {
+                    _logger.LogInformation($"Director with ID {id} deleted successfully.");
+                    return RedirectToAction(nameof(Index));
+                }
 
-        private bool DirectorExists(int id)
-        {
-            return _context.Directors.Any(e => e.Id == id);
+                _logger.LogWarning($"Failed to delete director with ID {id}.");
+                ModelState.AddModelError("", "Failed to delete the director.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error occurred while deleting director with ID {id}.");
+                ModelState.AddModelError("", "An unexpected error occurred. Please try again.");
+            }
+
+            return RedirectToAction(nameof(Index));
         }
     }
 }

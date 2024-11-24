@@ -91,20 +91,48 @@ namespace AyseOzgeErkan_ProjectPhase1.Controllers
             {
                 try
                 {
-                    await _movieService.UpdateMovieAsync(movie);
-                    _logger.LogInformation($"Successfully updated movie: {movie.Name}");
-                    return RedirectToAction(nameof(Index));
+                    // Fetch the existing movie from the database
+                    var existingMovie = await _movieService.GetMovieByIdAsync(id);
+                    if (existingMovie == null)
+                    {
+                        _logger.LogWarning($"Movie with ID {id} not found.");
+                        return NotFound();
+                    }
+
+                    // Update properties of the existing movie
+                    existingMovie.Name = movie.Name;
+                    existingMovie.ReleaseDate = movie.ReleaseDate;
+                    existingMovie.TotalRevenue = movie.TotalRevenue;
+                    existingMovie.DirectorId = movie.DirectorId;
+
+                    // Save changes to the database
+                    var result = await _movieService.UpdateMovieAsync(existingMovie);
+                    if (result)
+                    {
+                        _logger.LogInformation($"Successfully updated movie: {existingMovie.Name}");
+                        return RedirectToAction(nameof(Index));
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"Failed to update movie: {existingMovie.Name}");
+                        ModelState.AddModelError("", "Failed to update the movie.");
+                    }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"Error updating movie with ID {movie.Id}");
-                    ModelState.AddModelError("", "An error occurred while updating the movie.");
+                    _logger.LogError(ex, $"Error updating movie with ID {id}");
+                    ModelState.AddModelError("", "An unexpected error occurred while updating the movie.");
                 }
             }
 
+            // Repopulate the directors dropdown for the view
             await PopulateDirectorsDropdownAsync(movie.DirectorId);
+
+            // Return the view with validation errors if any
             return View(movie);
         }
+
+
 
         // GET: Movies/Delete/5
         public async Task<IActionResult> Delete(int id)
