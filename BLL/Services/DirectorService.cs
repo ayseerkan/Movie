@@ -80,11 +80,13 @@ namespace BLL.Services
             }
             catch (Exception ex)
             {
+                // Log the exception
                 Console.WriteLine($"Error updating director: {ex.Message}");
+                // Replace Console.WriteLine with ILogger if available:
+                // _logger.LogError(ex, $"Error updating director with ID {director.Id}");
                 return false;
             }
         }
-
 
         // Delete a director asynchronously by ID
         public async Task<bool> DeleteDirectorAsync(int id)

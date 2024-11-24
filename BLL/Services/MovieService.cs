@@ -51,7 +51,6 @@ public class MovieService
             existingMovie.TotalRevenue = movie.TotalRevenue;
             existingMovie.DirectorId = movie.DirectorId;
 
-            // Optional: Update relationships, e.g., MovieGenres
             // If MovieGenres is being updated, clear and re-add the collection
             if (movie.MovieGenres != null && movie.MovieGenres.Any())
             {

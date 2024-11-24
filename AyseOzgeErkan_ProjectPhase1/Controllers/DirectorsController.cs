@@ -28,10 +28,9 @@ namespace AyseOzgeErkan_ProjectPhase1.Controllers
         // GET: Directors/Details/5
         public async Task<IActionResult> Details(int id)
         {
-            var director = await _directorService.GetDirectorByIdAsync(id);
+            var director = await GetDirectorOrLogNotFound(id);
             if (director == null)
             {
-                _logger.LogWarning($"Director with ID {id} not found.");
                 return NotFound();
             }
 
@@ -83,10 +82,9 @@ namespace AyseOzgeErkan_ProjectPhase1.Controllers
         // GET: Directors/Edit/5
         public async Task<IActionResult> Edit(int id)
         {
-            var director = await _directorService.GetDirectorByIdAsync(id);
+            var director = await GetDirectorOrLogNotFound(id);
             if (director == null)
             {
-                _logger.LogWarning($"Director with ID {id} not found for editing.");
                 return NotFound();
             }
 
@@ -138,14 +136,12 @@ namespace AyseOzgeErkan_ProjectPhase1.Controllers
             return View(director);
         }
 
-
         // GET: Directors/Delete/5
         public async Task<IActionResult> Delete(int id)
         {
-            var director = await _directorService.GetDirectorByIdAsync(id);
+            var director = await GetDirectorOrLogNotFound(id);
             if (director == null)
             {
-                _logger.LogWarning($"Director with ID {id} not found for deletion.");
                 return NotFound();
             }
 
@@ -159,6 +155,12 @@ namespace AyseOzgeErkan_ProjectPhase1.Controllers
         {
             try
             {
+                var director = await GetDirectorOrLogNotFound(id);
+                if (director == null)
+                {
+                    return NotFound();
+                }
+
                 var result = await _directorService.DeleteDirectorAsync(id);
                 if (result)
                 {
@@ -176,6 +178,17 @@ namespace AyseOzgeErkan_ProjectPhase1.Controllers
             }
 
             return RedirectToAction(nameof(Index));
+        }
+
+        // Helper method to fetch a director and log if not found
+        private async Task<Director> GetDirectorOrLogNotFound(int id)
+        {
+            var director = await _directorService.GetDirectorByIdAsync(id);
+            if (director == null)
+            {
+                _logger.LogWarning($"Director with ID {id} not found.");
+            }
+            return director;
         }
     }
 }
